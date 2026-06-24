@@ -78,6 +78,35 @@ All visualizations are saved in the `outputs/charts/` folder:
 5. **Survival by Embarkation Port** - Bar chart showing port impact
 6. **Survival by Family Size** - Bar chart showing family size impact
 
+## 🧹 Data Cleaning Process
+
+The raw dataset had several issues that needed to be addressed:
+
+### Missing Values
+
+| Column | Missing | Action Taken |
+|--------|---------|--------------|
+| Age | 177 | Filled with **median age** (28.0) |
+| Embarked | 2 | Filled with **most common port** (S) |
+| Cabin | 687 | **Dropped** (too many missing) |
+
+### Data Type Conversions
+
+| Column | Before | After |
+|--------|--------|-------|
+| Sex | male/female | 0 (male), 1 (female) |
+| Embarked | C/Q/S | 0 (C), 1 (Q), 2 (S) |
+
+### Feature Engineering (New Columns Created)
+
+| New Column | Description |
+|------------|-------------|
+| `AgeGroup` | Child, Teen, Adult, Middle-aged, Senior |
+| `Family_Size` | SibSp + Parch (total family on board) |
+| `Fare_Category` | Very Low, Low, Medium, High |
+
+**Result:** A clean dataset with **891 rows** and **15 columns**, ready for analysis and machine learning.
+
 ## 🛠️ Technologies Used
 
 - **Python 3.9+** - Programming language
