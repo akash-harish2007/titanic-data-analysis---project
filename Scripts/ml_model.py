@@ -21,3 +21,10 @@ print(f"✅ Test data: {test.shape}")
 
 print("\n📊 Training columns:")
 print(train.columns.tolist())
+
+x_train = train.drop('survived', axis = 1)
+y_train = train['survived']
+
+x_test = test.drop('survived', axis = 1)
+y_test = test['survived']
+
