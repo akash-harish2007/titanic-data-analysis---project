@@ -1,6 +1,6 @@
 import pandas as pd
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import LabelEncoder
+from sklearn.preprocessing import OneHotEncoder
 
 
 def clean_data():
@@ -16,8 +16,39 @@ def clean_data():
     print("Original shape:", df.shape)
 
 
+    # =========================
+    # Feature Engineering
+    # =========================
 
+    # Extract Title from Name
+
+    df["Title"] = df["Name"].str.extract(
+        r',\s*([^\.]+)\.'
+    )
+
+
+    # Create Family Size
+
+    df["FamilySize"] = (
+        df["SibSp"]
+        +
+        df["Parch"]
+        +
+        1
+    )
+
+
+    # Create IsAlone
+
+    df["IsAlone"] = (
+        df["FamilySize"] == 1
+    ).astype(int)
+
+
+
+    # =========================
     # Remove unnecessary columns
+    # =========================
 
     columns_to_drop = [
         "Cabin",
@@ -33,52 +64,107 @@ def clean_data():
 
 
 
-    # Separate X and y
+    # =========================
+    # Separate Target
+    # =========================
 
-    X = df.drop(
+    y = df["Survived"]
+
+
+    df = df.drop(
         "Survived",
         axis=1
     )
 
 
-    y = df["Survived"]
 
-
-
+    # =========================
     # Find categorical columns
+    # =========================
 
-    categorical_columns = X.select_dtypes(
+    categorical_columns = df.select_dtypes(
         include="object"
     ).columns
 
 
-
-    # Encode categorical values
-
-    encoder = LabelEncoder()
-
-
-    for column in categorical_columns:
-
-        X[column] = encoder.fit_transform(
-            X[column].astype(str)
-        )
+    numerical_columns = df.select_dtypes(
+        exclude="object"
+    ).columns
 
 
 
-    # Fill missing values
-
-    X = X.fillna(
-        X.median()
+    print(
+        "Categorical columns:",
+        list(categorical_columns)
     )
 
 
 
-    # Split dataset
+    # =========================
+    # One Hot Encoding
+    # =========================
+
+    encoder = OneHotEncoder(
+        handle_unknown="ignore",
+        sparse_output=False
+    )
+
+
+    encoded = encoder.fit_transform(
+        df[categorical_columns]
+    )
+
+
+    encoded_columns = encoder.get_feature_names_out(
+        categorical_columns
+    )
+
+
+    df_encoded = pd.DataFrame(
+        encoded,
+        columns=encoded_columns,
+        index=df.index
+    )
+
+
+
+    # Keep numerical columns + encoded columns
+
+    df_final = pd.concat(
+        [
+            df[numerical_columns],
+            df_encoded
+        ],
+        axis=1
+    )
+
+
+
+    # =========================
+    # Handle Missing Values
+    # =========================
+
+    df_final = df_final.fillna(
+        df_final.median()
+    )
+
+
+
+    print(
+        "Final shape:",
+        df_final.shape
+    )
+
+
+
+    # =========================
+    # Train Test Split
+    # =========================
 
     X_train, X_test, y_train, y_test = train_test_split(
 
-        X,
+        df_final,
+
         y,
 
         test_size=0.2,
@@ -88,9 +174,16 @@ def clean_data():
 
 
 
-    print("Training data:", X_train.shape)
+    print(
+        "Training data:",
+        X_train.shape
+    )
 
-    print("Testing data:", X_test.shape)
+
+    print(
+        "Testing data:",
+        X_test.shape
+    )
 
 
 
